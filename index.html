@@ -106,10 +106,38 @@
   .station-popup .address { font-size: 11px; color: var(--mute); margin: 0 0 8px; word-break: break-word; }
   .station-popup .distance { font-size: 13px; font-weight: 600; margin: 8px 0; }
   .station-popup .power { font-size: 12px; color: var(--text); margin: 4px 0; }
-  .popup-buttons { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  .popup-buttons a { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; cursor: pointer; transition: all 0.2s; }
-  .popup-buttons a:hover { border-color: var(--green); color: var(--green); }
-  .copy-addr { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .popup-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  }
+
+  .popup-buttons a, .popup-buttons button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    text-decoration: none;
+    color: white !important;
+    transition: all 0.2s;
+  }
+
+  .popup-buttons a:hover, .popup-buttons button:hover {
+    border-color: var(--green);
+    color: var(--green) !important;
+  }
+
+  .copy-addr {
+    background: var(--panel-2);
+    color: white;
+  }
   .copy-addr:hover { border-color: var(--green); color: var(--green); }
 
   .map-overlay-card { position: absolute; bottom: 16px; left: 16px; right: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border-radius: 10px; z-index: 400; overflow: hidden; }
@@ -202,6 +230,7 @@
   .toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: #001A0F; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; z-index: 2000; animation: fadeOut 2s ease forwards; }
   @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -322,24 +351,28 @@
 
   // Crear popup personalizado con nombre, distancia, dirección y botones
   function createStationPopup(station, distanceKm = null) {
-    const distText = distanceKm !== null ? `📏 Distancia: ${distanceKm.toFixed(1)} km` : '📍 Estación';
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`;
-    const wazeUrl = `https://www.waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
-    
-    return `
-      <div class="station-popup">
-        <h4>⚡ ${station.name}</h4>
-        <div class="address">📌 ${station.address}</div>
-        <div class="power">🔋 ${station.power} kW · ${station.type}</div>
-        <div class="distance" style="color: var(--green);">${distText}</div>
-        <div class="popup-buttons">
-          <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ Google Maps</a>
-          <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer">📍 Waze</a>
-          <button class="copy-addr" onclick="window.copyAddress('${station.address.replace(/'/g, "\\'")}')">📋 Copiar dirección</button>
-        </div>
+  const distText = distanceKm !== null ? `📏 Distancia: ${distanceKm.toFixed(1)} km` : '📍 Estación';
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`;
+  const wazeUrl = `https://www.waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
+  
+  // Usar tus archivos SVG locales
+  const googleLogo = `<img src="google-maps.svg" style="width:18px;height:18px;vertical-align:middle;" alt="Google Maps">`;
+  const wazeLogo = `<img src="waze.svg" style="width:18px;height:18px;vertical-align:middle;" alt="Waze">`;
+  
+  return `
+    <div class="station-popup">
+      <h4>⚡ ${station.name}</h4>
+      <div class="address">📌 ${station.address}</div>
+      <div class="power">🔋 ${station.power} kW · ${station.type}</div>
+      <div class="distance" style="color: var(--green);">${distText}</div>
+      <div class="popup-buttons">
+        <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:white;text-decoration:none;">${googleLogo} Google Maps</a>
+        <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:white;text-decoration:none;">${wazeLogo} Waze</a>
+        <button class="copy-addr" onclick="window.copyAddress('${station.address.replace(/'/g, "\\'")}')" style="display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--line);color:white;padding:6px 12px;border-radius:6px;cursor:pointer;">📋 Copiar dirección</button>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   // Exponer función de copia globalmente
   window.copyAddress = (address) => copyToClipboard(address);
