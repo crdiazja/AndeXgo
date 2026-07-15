@@ -1,4 +1,6 @@
 node_modules/
 .next/
 dist/
+.DS_StoreV3/platform/node_modules/
+V3/platform/.next/
 .DS_Store
