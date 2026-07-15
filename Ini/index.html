@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AndeXgo — Carga rápida para vehículos eléctricos en América Latina</title>
+<meta name="description" content="AndeXgo opera la red de carga rápida más confiable para vehículos eléctricos comerciales y de flota. Cargadores DC Fast 360 kW y AC Comercial 22 kW. Encuentra tu cargador más cercano." />
+<meta name="theme-color" content="#04080C" />
+<meta name="keywords" content="cargadores EV, carga rápida, vehículos eléctricos, DC fast, AC comercial, flotas, AndeXgo, América Latina" />
+<link rel="canonical" href="https://www.andexgo.com/" />
+
+<!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://www.andexgo.com/" />
+<meta property="og:title" content="AndeXgo — Carga rápida para vehículos eléctricos" />
+<meta property="og:description" content="La red de carga rápida más confiable para vehículos eléctricos comerciales y de flota en América Latina." />
+<meta property="og:image" content="https://www.andexgo.com/og-image.jpg" />
+<meta property="og:locale" content="es_LA" />
+<meta property="og:site_name" content="AndeXgo" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="AndeXgo — Carga rápida para vehículos eléctricos" />
+<meta name="twitter:description" content="La red de carga rápida más confiable para vehículos eléctricos comerciales y de flota en América Latina." />
+<meta name="twitter:image" content="https://www.andexgo.com/og-image.jpg" />
+
+<!-- Favicon (SVG inline — escalable) -->
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root {
+    --bg: #04080C;
+    --panel: #0A1118;
+    --panel-2: #0F1820;
+    --line: rgba(255,255,255,.07);
+    --line-2: rgba(255,255,255,.14);
+    --text: #DCE5EC;
+    --mute: #6F7E8C;
+    --green: #00E37A;
+    --green-soft: rgba(0,227,122,.16);
+    --warn: #FFB347;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .micro { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); }
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 28px; }
+
+  /* TOP BARS */
+  .ticker-bar { background: var(--panel); border-bottom: 1px solid var(--line); padding: 8px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--mute); }
+  .ticker-bar .row { display: flex; gap: 24px; align-items: center; justify-content: space-between; }
+  .ticker-bar .left { display: flex; gap: 24px; align-items: center; }
+  .live { display: inline-flex; align-items: center; gap: 8px; color: var(--green); }
+  .live::before { content: ""; width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 0 4px rgba(0,227,122,.18); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  nav.top { background: var(--bg); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; }
+  nav.top .row { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 24px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo img { height: 38px; width: auto; display: block; }
+  .logo .wm { display: none; }
+  .nav-links { display: flex; gap: 22px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; }
+  .nav-links a { color: var(--text); opacity: .82; }
+  .nav-links a:hover { color: var(--green); opacity: 1; }
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; font-weight: 500; font-size: 13px; transition: all .15s; border: 1px solid transparent; cursor: pointer; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.04em; border-radius: 4px; }
+  .btn-primary { background: var(--green); color: #001A0F; }
+  .btn-primary:hover { background: #1aff8e; }
+  .btn-line { background: transparent; color: var(--text); border-color: var(--line-2); }
+  .btn-line:hover { border-color: var(--text); }
+
+  /* HERO / DASHBOARD */
+  .hero { padding: 32px 0 56px; }
+  .hero-grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; min-height: 640px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  .pad { padding: 24px; }
+  .pad-tight { padding: 16px 20px; }
+
+  .hero-left { display: flex; flex-direction: column; gap: 24px; padding: 32px 28px; height: 100%; }
+  .hero-left h1 { font-family: 'IBM Plex Sans', sans-serif; font-size: 56px; line-height: 0.96; letter-spacing: -0.025em; font-weight: 600; margin: 0; }
+  .hero-left h1 em { font-style: normal; color: var(--green); }
+  .hero-left p { color: var(--mute); font-size: 15px; line-height: 1.55; margin: 0; }
+  .hero-left .actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+  .actions .btn { padding: 14px 18px; font-size: 13px; }
+
+  .hero-map { position: relative; overflow: hidden; }
+  .hero-map .head { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .hero-map .head h6 { margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; font-weight: 500; color: var(--text); }
+  .hero-map .head .tools { display: flex; gap: 6px; }
+  .hero-map .head .tools span { padding: 4px 8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.06em; color: var(--mute); }
+  .hero-map .head .tools span.on { color: var(--green); border-color: rgba(0,227,122,.4); background: rgba(0,227,122,.06); }
+  .map-canvas { position: relative; height: 540px; background: var(--bg); overflow: hidden; }
+  #leaflet-map { position: absolute; inset: 0; width: 100%; height: 100%; background: #0a1118; z-index: 1; }
+  .leaflet-container { background: #0a1118 !important; font-family: 'IBM Plex Sans', sans-serif; outline: 0; }
+  .leaflet-control-attribution { background: rgba(7,16,26,0.8) !important; color: var(--mute) !important; font-family: 'IBM Plex Mono', monospace; font-size: 10px !important; padding: 2px 8px !important; }
+  .leaflet-control-attribution a { color: var(--green) !important; }
+  .leaflet-control-zoom a { background: var(--panel-2) !important; color: var(--text) !important; border: 1px solid var(--line-2) !important; font-family: 'IBM Plex Mono', monospace; }
+  .leaflet-control-zoom a:hover { background: var(--panel) !important; color: var(--green) !important; }
+  @keyframes ping { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+  .ax-pin { position: relative; }
+  .ax-pin .core { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; background: #00E37A; border-radius: 50%; box-shadow: 0 0 0 4px rgba(0,227,122,.18), 0 0 12px rgba(0,227,122,.6); }
+  .ax-pin .ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border: 1px solid rgba(0,227,122,.5); border-radius: 50%; animation: ping 2.4s infinite; }
+  .ax-pin.warn .core { background: #FFB347; box-shadow: 0 0 0 4px rgba(255,179,71,.18), 0 0 12px rgba(255,179,71,.5); }
+  .ax-pin.warn .ring { border-color: rgba(255,179,71,.5); }
+  .leaflet-popup-content-wrapper { background: var(--panel) !important; color: var(--text) !important; border: 1px solid var(--line-2); border-radius: 6px !important; box-shadow: 0 8px 24px rgba(0,0,0,.5) !important; }
+  .leaflet-popup-tip { background: var(--panel) !important; }
+  .leaflet-popup-content { margin: 14px 16px !important; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; line-height: 1.5; min-width: 200px; }
+  .leaflet-popup-content .pop-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .leaflet-popup-content .pop-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin: 0 0 8px; }
+  .leaflet-popup-content .pop-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+  .leaflet-popup-content .pop-stats div b { display: block; font-weight: 600; font-size: 16px; color: var(--green); }
+  .leaflet-popup-content .pop-stats div span { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+  .leaflet-popup-close-button { color: var(--mute) !important; }
+  .leaflet-popup-close-button:hover { color: var(--text) !important; }
+
+  .map-overlay-card { position: absolute; bottom: 20px; left: 20px; right: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .map-overlay-card .cell { background: rgba(7,16,26,0.85); padding: 14px 16px; backdrop-filter: blur(6px); }
+  .map-overlay-card .cell b { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.02em; display: block; margin-bottom: 2px; }
+  .map-overlay-card .cell .k { color: var(--mute); font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* DASH ROW */
+  .dash-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 24px; padding: 0 0 80px; }
+  .stat { padding: 22px; }
+  .stat .label { display: flex; justify-content: space-between; align-items: center; }
+  .stat .v { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 44px; line-height: 1; letter-spacing: -0.025em; margin: 14px 0 8px; }
+  .stat .delta { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .stat .delta.up { color: var(--green); }
+  .stat .spark { height: 36px; margin-top: 12px; }
+
+  /* SECTION SCAFFOLD */
+  section.block { padding: 100px 0; border-top: 1px solid var(--line); }
+  .sec-head { display: flex; justify-content: space-between; align-items: end; gap: 40px; margin-bottom: 48px; }
+  .sec-head h2 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 48px; line-height: 1; letter-spacing: -0.03em; margin: 12px 0 0; max-width: 720px; }
+  .sec-head h2 em { font-style: normal; color: var(--green); }
+
+  /* PRODUCTS as data tables */
+  .prod-table { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+  .prod-row { display: grid; grid-template-columns: 220px 1.4fr repeat(4, 1fr) 140px; gap: 0; align-items: stretch; border-bottom: 1px solid var(--line); }
+  .prod-row:last-child { border-bottom: 0; }
+  .prod-row.head { background: var(--panel-2); }
+  .prod-row.head > div { padding: 14px 18px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); }
+  .prod-row > div { padding: 24px 18px; border-right: 1px solid var(--line); }
+  .prod-row > div:last-child { border-right: 0; }
+  .prod-row .visual { background: linear-gradient(160deg, var(--panel-2), #050B12); position: relative; min-height: 140px; display: grid; place-items: center; padding: 0; }
+  .prod-row .visual svg { width: 70%; opacity: 0.7; }
+  .prod-row .name h3 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 26px; margin: 0 0 6px; letter-spacing: -0.015em; }
+  .prod-row .name .pill { display: inline-block; margin-bottom: 8px; padding: 3px 8px; background: var(--green-soft); color: var(--green); font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 3px; }
+  .prod-row .name p { color: var(--mute); font-size: 13.5px; line-height: 1.5; margin: 6px 0 0; }
+  .prod-row .v { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 22px; letter-spacing: -0.015em; }
+  .prod-row .k { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); margin-top: 4px; }
+  .prod-row .actions { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+
+  /* USE CASES — board */
+  .uc-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .uc-card { padding: 28px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-height: 320px; display: flex; flex-direction: column; gap: 14px; }
+  .uc-card .tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); }
+  .uc-card h4 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.05; letter-spacing: -0.015em; margin: 0; }
+  .uc-card p { color: var(--mute); font-size: 14px; line-height: 1.55; margin: 0; }
+  .uc-card .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); }
+  .uc-card .stats b { font-family: 'IBM Plex Sans', sans-serif; font-size: 22px; letter-spacing: -0.02em; font-weight: 600; display: block; }
+  .uc-card .stats span { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+
+  /* INTEGRATIONS / API */
+  .api { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; align-items: stretch; }
+  .api .panel { padding: 32px; }
+  .api h3 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 32px; letter-spacing: -0.02em; margin: 14px 0 14px; }
+  .api p { color: var(--mute); font-size: 15px; line-height: 1.55; }
+  .api ul { list-style: none; padding: 0; margin: 24px 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .api ul li { display: flex; gap: 10px; font-size: 14px; align-items: center; }
+  .api ul li::before { content: "▸"; color: var(--green); }
+  .codecard { background: #050B12; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .codecard .head { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+  .codecard .head .dot { width: 10px; height: 10px; border-radius: 50%; background: #2A3441; }
+  .codecard .head .name { margin-left: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--mute); }
+  .codecard pre { margin: 0; padding: 22px 24px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1.65; color: var(--text); white-space: pre-wrap; }
+  .codecard .k { color: #7AB7FF; }
+  .codecard .s { color: var(--green); }
+  .codecard .c { color: var(--mute); }
+  .codecard .n { color: var(--warn); }
+
+  /* CTA */
+  .cta { padding: 100px 0; border-top: 1px solid var(--line); }
+  .cta-card { padding: 56px; border: 1px solid var(--green); border-radius: 12px; background: linear-gradient(135deg, rgba(0,227,122,.06), rgba(0,227,122,.01)); display: flex; justify-content: space-between; align-items: end; gap: 40px; }
+  .cta-card h2 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 56px; line-height: 1; letter-spacing: -0.03em; margin: 0; max-width: 760px; }
+  .cta-card h2 em { font-style: normal; color: var(--green); }
+
+  /* FOOTER */
+  footer { padding: 80px 0 32px; border-top: 1px solid var(--line); background: var(--panel); }
+  .foot { display: grid; grid-template-columns: 1.5fr repeat(4,1fr); gap: 32px; padding-bottom: 40px; border-bottom: 1px solid var(--line); }
+  .foot h5 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); margin: 0 0 14px; font-weight: 500; }
+  .foot ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+  .foot ul a { opacity: .8; }
+  .foot ul a:hover { opacity: 1; color: var(--green); }
+  .foot p.about { color: var(--mute); font-size: 14px; line-height: 1.55; max-width: 320px; margin-top: 14px; }
+  .foot-end { display: flex; justify-content: space-between; padding-top: 28px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+</style>
+</head>
+<body>
+
+<!-- TICKER BAR -->
+<div class="ticker-bar">
+  <div class="container row">
+    <div class="left">
+      <span class="live">RED EN VIVO</span>
+      <span>1.240 ESTACIONES</span>
+      <span>· 03:42 GMT‑5</span>
+      <span>· UPTIME 97,4 %</span>
+      <span>· DEMANDA 22,4 MW</span>
+    </div>
+    <div>ES‑LA · USD</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="top">
+  <div class="container row">
+    <a class="logo" href="#">
+      <img src="logo-andexgo.png" alt="AndeXgo" />
+    </a>
+    <div class="nav-links">
+      <a href="#">Mapa</a>
+      <a href="#">Productos</a>
+      <a href="#">Plataforma</a>
+      <a href="#">Soluciones</a>
+      <a href="#">Desarrolladores</a>
+      <a href="#">Soporte</a>
+    </div>
+    <div class="nav-actions">
+      <a class="btn btn-line" href="#">Iniciar sesión</a>
+      <a class="btn btn-primary" href="#">Encontrar cargador →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="panel hero-left">
+      <p class="micro">// AndeXgo Power Network</p>
+      <h1>Toda la red, <em>en una pantalla.</em></h1>
+      <p>Encuentra estaciones disponibles, monitorea consumo y administra tu flota desde una sola plataforma. Datos en vivo cada 5 segundos.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#">Encontrar cargador más cercano →</a>
+        <a class="btn btn-line" href="#">Acceso para empresas</a>
+      </div>
+    </div>
+    <div class="panel hero-map">
+      <div class="head">
+        <h6>// MAPA OPERATIVO · CONO SUR + ANDES</h6>
+        <div class="tools">
+          <span class="on">DC FAST</span>
+          <span class="on">AC</span>
+          <span>FUERA DE SERVICIO</span>
+          <span>ZOOM 4×</span>
+        </div>
+      </div>
+      <div class="map-canvas">
+        <div id="leaflet-map"></div>
+        <div class="map-overlay-card" style="z-index:400;">
+          <div class="cell"><b>1.240</b><span class="k">Estaciones activas</span></div>
+          <div class="cell"><b>22,4 MW</b><span class="k">Demanda actual</span></div>
+          <div class="cell"><b>97,4 %</b><span class="k">Uptime · 30 días</span></div>
+          <div class="cell"><b>+320</b><span class="k">En construcción</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASH ROW -->
+<div class="container">
+  <div class="dash-row">
+    <div class="panel stat">
+      <div class="label"><span class="micro">// ENERGÍA SUMINISTRADA</span><span class="micro">24H</span></div>
+      <div class="v">312,8 <small style="font-size:18px; color:var(--mute);">MWh</small></div>
+      <div class="delta up">▲ 4,2 % vs ayer</div>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline points="0,32 20,30 40,28 60,24 80,28 100,20 120,18 140,12 160,16 180,8 200,10" fill="none" stroke="#00E37A" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="panel stat">
+      <div class="label"><span class="micro">// SESIONES ACTIVAS</span><span class="micro">EN VIVO</span></div>
+      <div class="v">386</div>
+      <div class="delta up">▲ 12 nuevas / min</div>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline points="0,28 20,24 40,26 60,18 80,22 100,14 120,18 140,10 160,14 180,8 200,12" fill="none" stroke="#00E37A" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="panel stat">
+      <div class="label"><span class="micro">// CO₂ EVITADO</span><span class="micro">YTD</span></div>
+      <div class="v">14.220 <small style="font-size:18px; color:var(--mute);">t</small></div>
+      <div class="delta up">▲ 18,6 % YoY</div>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline points="0,36 20,32 40,30 60,28 80,22 100,24 120,18 140,16 160,12 180,8 200,6" fill="none" stroke="#00E37A" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="panel stat">
+      <div class="label"><span class="micro">// TARIFA MEDIA</span><span class="micro">DC FAST</span></div>
+      <div class="v">$0,38 <small style="font-size:18px; color:var(--mute);">/kWh</small></div>
+      <div class="delta" style="color:var(--mute);">— estable</div>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline points="0,20 20,22 40,18 60,22 80,20 100,18 120,22 140,20 160,18 180,22 200,20" fill="none" stroke="#6F7E8C" stroke-width="1.5"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS as table -->
+<section class="block" style="border-top: 0;">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <p class="micro">// CATÁLOGO · HARDWARE</p>
+        <h2>Cargadores certificados, <em>monitoreados de fábrica.</em></h2>
+      </div>
+      <a class="btn btn-line" href="#">Descargar fichas técnicas →</a>
+    </div>
+    <div class="prod-table">
+      <div class="prod-row head">
+        <div>// VISUAL</div>
+        <div>// MODELO</div>
+        <div>POTENCIA</div>
+        <div>PUERTOS</div>
+        <div>10→80%</div>
+        <div>PROTOCOLO</div>
+        <div></div>
+      </div>
+      <div class="prod-row">
+        <div class="visual">
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="50" y="20" width="100" height="160" rx="10" stroke="#00E37A" stroke-width="2" />
+            <rect x="62" y="36" width="76" height="42" rx="4" stroke="#DCE5EC" stroke-width="1.5" />
+            <path d="M100 100 L92 124 H108 L98 148" stroke="#00E37A" stroke-width="2.5" stroke-linejoin="round" />
+            <circle cx="100" cy="166" r="6" stroke="#DCE5EC" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="name">
+          <span class="pill">DC FAST</span>
+          <h3>AndeXgo DCFC‑360</h3>
+          <p>Carga ultra-rápida modular. Refrigeración líquida. Doble puerto simultáneo.</p>
+        </div>
+        <div><div class="v">360 kW</div><div class="k">Pico · CCS2</div></div>
+        <div><div class="v">2×</div><div class="k">CCS · CHAdeMO</div></div>
+        <div><div class="v">18 min</div><div class="k">10–80 %</div></div>
+        <div><div class="v">OCPP 2.0</div><div class="k">ISO 15118</div></div>
+        <div class="actions"><a class="btn btn-primary" href="#">Cotizar</a><a class="btn btn-line" href="#">Ficha</a></div>
+      </div>
+      <div class="prod-row">
+        <div class="visual">
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="60" y="16" width="80" height="168" rx="10" stroke="#00E37A" stroke-width="2" />
+            <rect x="72" y="32" width="56" height="38" rx="4" stroke="#DCE5EC" stroke-width="1.5" />
+            <path d="M100 90 L92 116 H108 L98 142" stroke="#00E37A" stroke-width="2.5" stroke-linejoin="round" />
+            <circle cx="100" cy="160" r="6" stroke="#DCE5EC" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="name">
+          <span class="pill">DC FAST</span>
+          <h3>AndeXgo DCFC‑180</h3>
+          <p>Versión compacta para hubs urbanos. Ideal para taxis, ride-share y delivery.</p>
+        </div>
+        <div><div class="v">180 kW</div><div class="k">Pico · CCS2</div></div>
+        <div><div class="v">2×</div><div class="k">CCS</div></div>
+        <div><div class="v">25 min</div><div class="k">10–80 %</div></div>
+        <div><div class="v">OCPP 2.0</div><div class="k">ISO 15118</div></div>
+        <div class="actions"><a class="btn btn-primary" href="#">Cotizar</a><a class="btn btn-line" href="#">Ficha</a></div>
+      </div>
+      <div class="prod-row">
+        <div class="visual">
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="68" y="30" width="64" height="140" rx="8" stroke="#00E37A" stroke-width="2" />
+            <rect x="78" y="44" width="44" height="30" rx="3" stroke="#DCE5EC" stroke-width="1.5" />
+            <circle cx="100" cy="110" r="14" stroke="#DCE5EC" stroke-width="1.5" />
+            <path d="M100 96 V124 M86 110 H114" stroke="#00E37A" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="name">
+          <span class="pill">AC COMERCIAL</span>
+          <h3>AndeXgo AC‑22 Pro</h3>
+          <p>Wallbox y pedestal de 22 kW. Multi-usuario con RFID y app, balanceo dinámico.</p>
+        </div>
+        <div><div class="v">22 kW</div><div class="k">Pico · Tipo 2</div></div>
+        <div><div class="v">1–2×</div><div class="k">Tipo 2</div></div>
+        <div><div class="v">N/A</div><div class="k">AC</div></div>
+        <div><div class="v">OCPP 2.0</div><div class="k">RFID · QR</div></div>
+        <div class="actions"><a class="btn btn-primary" href="#">Cotizar</a><a class="btn btn-line" href="#">Ficha</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="block">
+  <div class="container">
+    <div class="sec-head">
+      <div>
+        <p class="micro">// CASOS DE USO</p>
+        <h2>Energía que se adapta a <em>tu operación.</em></h2>
+      </div>
+    </div>
+    <div class="uc-board">
+      <div class="uc-card">
+        <span class="tag">/01 · Comercio</span>
+        <h4>Tiendas y centros comerciales</h4>
+        <p>Convierte cada estacionamiento en un punto de retención. Tus clientes cargan mientras compran y tú generas un nuevo flujo de ingresos.</p>
+        <div class="stats">
+          <div><b>+38 %</b><span>Tiempo de visita</span></div>
+          <div><b>$/site</b><span>Revenue share</span></div>
+        </div>
+      </div>
+      <div class="uc-card">
+        <span class="tag">/02 · Flotas</span>
+        <h4>Flotas y last‑mile</h4>
+        <p>Operación 24/7 con cargas programadas, prioridades por vehículo y telemática unificada para reducir costo por kilómetro.</p>
+        <div class="stats">
+          <div><b>‑22 %</b><span>Costo/km</span></div>
+          <div><b>API</b><span>TMS · ERP</span></div>
+        </div>
+      </div>
+      <div class="uc-card">
+        <span class="tag">/03 · Edificios</span>
+        <h4>Edificios y residenciales</h4>
+        <p>Soluciones llave en mano para administradores: instalación, gestión y facturación automática a cada residente.</p>
+        <div class="stats">
+          <div><b>0 CAPEX</b><span>Modelo concesión</span></div>
+          <div><b>Auto</b><span>Facturación</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API -->
+<section class="block">
+  <div class="container api">
+    <div class="panel">
+      <div class="pad">
+        <p class="micro">// PLATAFORMA · API</p>
+        <h3>Integración nativa con tu stack.</h3>
+        <p>Una API REST + webhooks para que tu ERP, TMS o app conecten con la red AndeXgo. OCPP 2.0 abierto, sin lock-in.</p>
+        <ul>
+          <li>Disponibilidad de estaciones en tiempo real</li>
+          <li>Sesiones de carga programadas y prioritarias</li>
+          <li>Consumo, costos y reportes ESG por sitio</li>
+          <li>Webhooks de inicio, fin y alertas operativas</li>
+        </ul>
+        <div style="margin-top:28px;">
+          <a class="btn btn-primary" href="#">Solicitar acceso →</a>
+          <a class="btn btn-line" href="#">Ver documentación</a>
+        </div>
+      </div>
+    </div>
+    <div class="codecard">
+      <div class="head">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="name">~/andexgo · GET /v1/stations/nearby</span>
+      </div>
+<pre><span class="c"># Estaciones disponibles cerca de Lima (radio 10 km)</span>
+<span class="k">$</span> curl https://api.andexgo.com/v1/stations/nearby \
+    <span class="s">-H "Authorization: Bearer ax_live_••••"</span> \
+    <span class="s">--data-urlencode "lat=-12.0464"</span> \
+    <span class="s">--data-urlencode "lng=-77.0428"</span> \
+    <span class="s">--data-urlencode "radius_km=10"</span>
+
+{
+  <span class="s">"count"</span>: <span class="n">14</span>,
+  <span class="s">"stations"</span>: [
+    {
+      <span class="s">"id"</span>: <span class="s">"st_lim_42"</span>,
+      <span class="s">"name"</span>: <span class="s">"AndeXgo San Isidro"</span>,
+      <span class="s">"power_kw"</span>: <span class="n">360</span>,
+      <span class="s">"available_ports"</span>: <span class="n">3</span>,
+      <span class="s">"price_kwh"</span>: <span class="n">0.38</span>,
+      <span class="s">"status"</span>: <span class="s">"online"</span>
+    }
+  ]
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <div class="cta-card">
+      <div>
+        <p class="micro" style="color:var(--green); margin:0 0 14px;">// EMPIEZA AHORA</p>
+        <h2>Encuentra el cargador AndeXgo <em>más cercano.</em></h2>
+      </div>
+      <a class="btn btn-primary" href="#" style="padding:18px 26px; font-size:14px;">Abrir mapa en vivo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot">
+      <div>
+        <a class="logo" href="#" style="color:var(--text);">
+          <img src="logo-andexgo.png" alt="AndeXgo" style="height:32px;" />
+        </a>
+        <p class="about">Operadora de carga rápida para vehículos eléctricos comerciales y de flota en América Latina. OCPP 2.0 · ISO 15118.</p>
+      </div>
+      <div><h5>Plataforma</h5><ul><li><a href="#">Mapa en vivo</a></li><li><a href="#">Dashboard empresas</a></li><li><a href="#">App móvil</a></li><li><a href="#">API</a></li></ul></div>
+      <div><h5>Hardware</h5><ul><li><a href="#">DCFC‑360</a></li><li><a href="#">DCFC‑180</a></li><li><a href="#">AC‑22 Pro</a></li></ul></div>
+      <div><h5>Soluciones</h5><ul><li><a href="#">Comercio</a></li><li><a href="#">Flotas</a></li><li><a href="#">Edificios</a></li></ul></div>
+      <div><h5>Empresa</h5><ul><li><a href="#">Sobre AndeXgo</a></li><li><a href="#">Carreras</a></li><li><a href="#">Estado de la red</a></li><li><a href="#">Contacto 24/7</a></li></ul></div>
+    </div>
+    <div class="foot-end">
+      <span>© 2026 AndeXgo · WWW.ANDEXGO.COM</span>
+      <span>v.red · ES‑LA · BUILD 2026.05.09</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  if (typeof L === 'undefined') return;
+  var stations = [
+    { name: 'AndeXgo Bogotá Norte', city: 'Bogotá, CO', lat: 4.7110, lng: -74.0721, type: 'DC FAST', power: 360, ports: 84, status: 'online' },
+    { name: 'AndeXgo Medellín Poblado', city: 'Medellín, CO', lat: 6.2087, lng: -75.5673, type: 'DC FAST', power: 360, ports: 52, status: 'online' },
+    { name: 'AndeXgo Cali', city: 'Cali, CO', lat: 3.4516, lng: -76.5319, type: 'DC FAST', power: 180, ports: 24, status: 'online' },
+    { name: 'AndeXgo Cartagena', city: 'Cartagena, CO', lat: 10.3910, lng: -75.4794, type: 'AC + DC', power: 180, ports: 16, status: 'online' },
+    { name: 'AndeXgo Quito UIO', city: 'Quito, EC', lat: -0.1807, lng: -78.4678, type: 'DC FAST', power: 360, ports: 36, status: 'online' },
+    { name: 'AndeXgo Guayaquil', city: 'Guayaquil, EC', lat: -2.1709, lng: -79.9224, type: 'AC + DC', power: 180, ports: 22, status: 'online' },
+    { name: 'AndeXgo Lima Centro', city: 'Lima, PE', lat: -12.0464, lng: -77.0428, type: 'DC FAST', power: 360, ports: 118, status: 'online' },
+    { name: 'AndeXgo Arequipa', city: 'Arequipa, PE', lat: -16.4090, lng: -71.5375, type: 'DC FAST', power: 180, ports: 18, status: 'online' },
+    { name: 'AndeXgo La Paz', city: 'La Paz, BO', lat: -16.4897, lng: -68.1193, type: 'AC + DC', power: 180, ports: 14, status: 'online' },
+    { name: 'AndeXgo Santa Cruz', city: 'Santa Cruz, BO', lat: -17.7833, lng: -63.1821, type: 'DC FAST', power: 180, ports: 12, status: 'maintenance' },
+    { name: 'AndeXgo Santiago Centro', city: 'Santiago, CL', lat: -33.4489, lng: -70.6693, type: 'DC FAST', power: 360, ports: 96, status: 'online' },
+    { name: 'AndeXgo Valparaíso', city: 'Valparaíso, CL', lat: -33.0472, lng: -71.6127, type: 'DC FAST', power: 180, ports: 20, status: 'online' },
+    { name: 'AndeXgo Antofagasta', city: 'Antofagasta, CL', lat: -23.6509, lng: -70.3975, type: 'DC FAST', power: 360, ports: 28, status: 'online' },
+    { name: 'AndeXgo Concepción', city: 'Concepción, CL', lat: -36.8201, lng: -73.0444, type: 'AC + DC', power: 180, ports: 16, status: 'online' }
+  ];
+  var map = L.map('leaflet-map', {
+    center: [-12, -73],
+    zoom: 4,
+    minZoom: 3,
+    maxZoom: 14,
+    zoomControl: true,
+    attributionControl: true,
+    scrollWheelZoom: false
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    attribution: '',
+    subdomains: 'abcd',
+    maxZoom: 19,
+    pane: 'shadowPane'
+  }).addTo(map);
+
+  stations.forEach(function(s){
+    var cls = s.status === 'maintenance' ? 'ax-pin warn' : 'ax-pin';
+    var icon = L.divIcon({
+      className: cls,
+      html: '<div class="ring"></div><div class="core"></div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -14]
+    });
+    var statusLabel = s.status === 'maintenance' ? 'EN MANTENIMIENTO' : 'ACTIVA · 24/7';
+    var html =
+      '<p class="pop-name">' + s.name + '</p>' +
+      '<p class="pop-meta">' + s.city + ' · ' + statusLabel + '</p>' +
+      '<div class="pop-stats">' +
+        '<div><b>' + s.power + ' kW</b><span>' + s.type + '</span></div>' +
+        '<div><b>' + s.ports + '</b><span>Puertos</span></div>' +
+      '</div>';
+    L.marker([s.lat, s.lng], { icon: icon }).addTo(map).bindPopup(html);
+  });
+})();
+</script>
+</body>
+</html>
